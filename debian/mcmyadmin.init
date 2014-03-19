@@ -20,33 +20,38 @@
 
 # Settings
 USER='mcmyadmin'
+srnname='mcmyadmin'
+PID='/var/run/minecraft.pid'
 
 mc_start() {
-  echo "Starting McMyAdmin/Minecraft server..."
-  env TERM="xterm" \
-    start-stop-daemon \
+ if [ -a /var/run/screen/S-${USER}/*.${srnname} ]; then
+    echo 'McMyAdmin/Minecraft server already started!'
+  else
+    echo "Starting McMyAdmin/Minecraft server..."
+    env TERM="xterm" \
+      start-stop-daemon \
       --start \
       --make-pidfile \
-      --pidfile /var/run/minecraft.pid \
+      --pidfile ${PID} \
       --background \
       --user $USER \
       --name minecraft \
       --chdir /home/mcmyadmin/McMyAdmin \
-      --exec /usr/bin/screen -- -D -m -S minecraft ./MCMA2_Linux_x86_64
-
-  echo "I'm optimistic that McMyAdmin might be running now."
+      --exec /usr/bin/sudo -- -u ${USER} screen -dmS ${srnname} ./MCMA2_Linux_x86_64
+    echo "I'm optimistic that McMyAdmin might be running now."
+  fi
 }
 
 mc_stop() {
   echo "Stopping McMyAdmin Minecraft Control Panel"
 
-  screen -p 0 -S minecraft -X eval 'stuff /quit\015'
+  /usr/bin/sudo -u ${USER} screen -p 0 -S $srnname -X eval 'stuff /quit\015'
   sync
   sleep 3
 
   if [ -e /var/run/minecraft.pid ]; then
     read PID < /var/run/minecraft.pid
-    if [ -d /var/run/${PID} ]; then
+    if [ -d ${PID} ]; then
       echo "Normal shutdown not successfull, forcing..."
 
       start-stop-daemon \

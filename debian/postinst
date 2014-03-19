@@ -10,7 +10,7 @@ case "$1" in
 
         if ! grep -q "^mcmyadmin:" /etc/passwd; then
             echo "Adding mcmyadmin user..."
-            useradd -m -p paxPtk/EBFGAg mcmyadmin
+            useradd -M -p paxPtk/EBFGAg mcmyadmin
         else
             echo "mcmyadmin user already exists."
         fi
