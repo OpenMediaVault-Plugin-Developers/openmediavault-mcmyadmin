@@ -19,7 +19,7 @@ case "$1" in
         else
             echo "${RUN_AS} user already exists."
         fi
-        chown ${RUN_AS}:${RUN_GROUP} -R /home/mcmyadmin/McMyAdmin
+        chown ${RUN_AS}:${RUN_GROUP} -R /home/mcmyadmin
 
         #insserv -d ${SERVICE_NAME}
         update-rc.d ${SERVICE_NAME} defaults
