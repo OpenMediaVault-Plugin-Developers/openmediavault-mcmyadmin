@@ -5,13 +5,16 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
+RUN_AS="mcmyadmin"
+SERVICE_NAME="mcmyadmin"
+
 case "$1" in
     purge)
         if [ -d "/home/mcmyadmin/McMyAdmin" ]; then
             rm -rf /home/mcmyadmin/McMyAdmin
         fi
-
-        userdel -r mcmyadmin
+        omv_config_delete "//services/${SERVICE_NAME}"
+        userdel -r ${RUN_AS}
 
     ;;
 

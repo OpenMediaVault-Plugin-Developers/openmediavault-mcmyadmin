@@ -1,9 +1,14 @@
-openmediavault-mcmyadmin (0.5.4) stable; urgency=low
+openmediavault-mcmyadmin (0.5.4~1.gbp778e32) stable; urgency=low
 
+  ** SNAPSHOT build @778e3277360e76feb56180fc03190a3caa25ebda **
+
+  [ OpenMediaVault Plugin Developers ]
   * Replaced start-stop-script with suggestion from jhmiller; mcmyadmin now runs under unpriviliged user
   * Added postrm script to enable --purge
 
- -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Tue, 18 Mar 2014 23:36:49 -0400
+  [ root ]
+
+ -- root <root@localhost.localdomain>  Wed, 19 Mar 2014 20:51:20 +0000
 
 openmediavault-mcmyadmin (0.5.3) stable; urgency=low
 

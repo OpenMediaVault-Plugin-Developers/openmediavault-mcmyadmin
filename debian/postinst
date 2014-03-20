@@ -5,20 +5,33 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
+RUN_AS="mcmyadmin"
+RUN_GROUP="mcmyadmin"
+
+SERVICE_NAME="mcmyadmin"
+
 case "$1" in
     configure)
 
-        if ! grep -q "^mcmyadmin:" /etc/passwd; then
-            echo "Adding mcmyadmin user..."
-            useradd -M -p paxPtk/EBFGAg mcmyadmin
+        if ! grep -q "^${RUN_AS}:" /etc/passwd; then
+            echo "Adding ${RUN_AS} user..."
+            useradd -M -p paxPtk/EBFGAg ${RUN_AS}
         else
-            echo "mcmyadmin user already exists."
+            echo "${RUN_AS} user already exists."
         fi
-        chown mcmyadmin:mcmyadmin -R /home/mcmyadmin/McMyAdmin
+        chown ${RUN_AS}:${RUN_GROUP} -R /home/mcmyadmin/McMyAdmin
 
-        update-rc.d mcmyadmin defaults
+        #insserv -d ${SERVICE_NAME}
+        update-rc.d ${SERVICE_NAME} defaults
 
-        /etc/init.d/mcmyadmin start
+        if ! omv_config_exists "/config/services/${SERVICE_NAME}"; then
+            echo "Initial configuration."
+            object="<enable>0</enable>"
+	    object="<port>0</port>"
+            omv_config_add_element "/config/services" "${SERVICE_NAME}" "${object}" true
+        fi
+
+		update-rc.d ${SERVICE_NAME} disable
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
