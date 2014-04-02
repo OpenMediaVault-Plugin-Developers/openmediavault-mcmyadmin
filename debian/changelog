@@ -1,3 +1,9 @@
+openmediavault-mcmyadmin (0.5.5) unstable; urgency=low
+
+  * Initial release to unstable repo
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Wed, 02 Apr 2014 07:57:38 -0500
+
 openmediavault-mcmyadmin (0.5.4~1.gbp778e32) stable; urgency=low
 
   ** SNAPSHOT build @778e3277360e76feb56180fc03190a3caa25ebda **
