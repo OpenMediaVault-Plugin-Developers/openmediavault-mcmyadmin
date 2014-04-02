@@ -7,5 +7,5 @@ Standards-Version: 3.9.3
 
 Package: openmediavault-mcmyadmin
 Architecture: all
-Depends: ${misc:Depends}, screen
+Depends: ${misc:Depends}, openmediavault (>= 0.5.42), screen
 Description: McMyAdmin for OpenMediaVault
