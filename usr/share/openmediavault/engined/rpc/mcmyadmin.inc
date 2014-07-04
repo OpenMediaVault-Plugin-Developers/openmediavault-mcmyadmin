@@ -17,71 +17,105 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "openmediavault/object.inc";
 require_once "openmediavault/config.inc";
 require_once "openmediavault/error.inc";
-require_once "openmediavault/util.inc";
-require_once "openmediavault/rpcservice.inc";
 require_once "openmediavault/notify.inc";
+require_once "openmediavault/object.inc";
+require_once "openmediavault/product.inc";
+require_once "openmediavault/rpcservice.inc";
+require_once "openmediavault/system.inc";
+require_once "openmediavault/util.inc";
 
-class OMVRpcServicemcMyadmin extends OMVRpcServiceAbstract {
+class OMVRpcServicemcMyadmin extends OMVRpcServiceAbstract
+{
+    private function getPluginName()
+    {
+        return strtolower($this->getName());
+    }
+
+    private function getEventMessagePath()
+    {
+        return sprintf("org.openmediavault.service.%s", $this->getPluginName());
+    }
 
     private function getXPath()
     {
-        return "//services/mcmyadmin";
+        return sprintf("//services/%s", $this->getPluginName());
     }
 
-    public function getName() {
+    public function getName()
+    {
         return "Mcmyadmin";
     }
 
-    public function initialize() {
+    public function initialize()
+    {
         $this->registerMethod("getSettings");
         $this->registerMethod("setSettings");
     }
 
-    function getSettings($params, $context) {
+    public function getSettings($params, $context)
+    {
         global $xmlConfig;
 
         $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR ));
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ));
 
         $object = $xmlConfig->get($this->getXPath());
 
-        if(is_null($object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, "//services/mcmyadmin");
+        if (is_null($object)) {
+            throw new OMVException(
+                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
+                $XPath
+            );
+        }
 
         $object["enable"]  = boolval($object["enable"]);
         $object["showtab"] = boolval($object["showtab"]);
-        $object['port']    = intval($object['port']);
+        $object["port"]    = intval($object['port']);
         return $object;
     }
 
-    function setSettings($params, $context) {
+    public function setSettings($params, $context)
+    {
         global $xmlConfig;
 
-        $this->validateMethodContext($context, array("role" => OMV_ROLE_ADMINISTRATOR));
+        $this->validateMethodContext($context, array(
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ));
 
-        $this->validateMethodParams($params, '{
-            "type"       : "object",
-            "properties" : {
-                "enable"  : { "type" : "boolean" },
-		"port"    : { "type" : "integer","minimum":1,"maximum":65535},
-                "showtab" : { "type" : "boolean" }
-            }
-        }');
+        $this->validateMethodParams(
+            $params,
+            '{
+                "type"       : "object",
+                "properties" : {
+                    "enable"  : { "type" : "boolean" },
+                    "port"    : { "type" : "integer","minimum":1,"maximum":65535},
+                    "showtab" : { "type" : "boolean" }
+                }
+            }'
+        );
 
         $object = array(
             "enable"  => array_boolval($params, "enable"),
-            "port"    => $params['port'],
+            "port"    => $params["port"],
             "showtab" => array_boolval($params, "showtab")
         );
 
-        if(false === $xmlConfig->replace($this->getXPath(), $object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_SET_OBJECT_FAILED, $this->getXPath());
+        if (false === $xmlConfig->replace($this->getXPath(), $object)) {
+            throw new OMVException(
+                OMVErrorMsg::E_CONFIG_SET_OBJECT_FAILED,
+                $this->getXPath()
+            );
+        }
 
         $dispatcher = &OMVNotifyDispatcher::getInstance();
-        $dispatcher->notify(OMV_NOTIFY_MODIFY, "org.openmediavault.services.mcmyadmin", $object);
+        $dispatcher->notify(
+            OMV_NOTIFY_MODIFY,
+            $this->getEventMessagePath(),
+            $object
+        );
     }
 }
 

@@ -17,38 +17,54 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "openmediavault/module.inc";
 require_once "openmediavault/config.inc";
 require_once "openmediavault/error.inc";
-require_once "openmediavault/util.inc";
 require_once "openmediavault/initscript.inc";
+require_once "openmediavault/module.inc";
+require_once "openmediavault/util.inc";
 
-class OMVModulemcMyadmin extends OMVModuleServiceAbstract
-    implements OMVINotifyListener, OMVIModuleServiceStatus {
+class OMVModulemcMyadmin extends OMVModuleServiceAbstract implements
+    OMVINotifyListener,
+    OMVIModuleServiceStatus
+{
+    private function getPluginName()
+    {
+        return strtolower($this->getName());
+    }
+
+    private function getEventMessagePath()
+    {
+        return sprintf("org.openmediavault.service.%s", $this->getPluginName());
+    }
 
     private function getXPath()
     {
-        return "//services/mcmyadmin";
+        return sprintf("//services/%s", $this->getPluginName());
     }
 
-    public function getName() {
-        return "mcmyadmin";
+    public function getName()
+    {
+        return "Myadmin";
     }
 
-    public function getStatus() {
+    public function getStatus()
+    {
         global $xmlConfig;
 
         $object = $xmlConfig->get($this->getXPath());
 
-        if (is_null($object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath());
+        if (is_null($object)) {
+            throw new OMVException(
+                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
+                $this->getXPath()
+            );
+        }
 
-        $initd = new OMVSysVInitScript($this->getName());
+        $initd = new OMVSysVInitScript($this->getPluginName());
 
         return array(
-            "name"    => $this->getName(),
-            "title"   => gettext("Mcmyadmin"),
+            "name"    => $this->getPluginName(),
+            "title"   => gettext($this->getName()),
             "enabled" => boolval($object["enable"]),
             "running" => $initd->status() == 0
         );
@@ -57,39 +73,51 @@ class OMVModulemcMyadmin extends OMVModuleServiceAbstract
 
     public function applyConfig()
     {
-        $cmd = "omv-mkconf mcmyadmin port & 2>&1";
+        $cmd = sprintf("omv-mkconf %s port & 2>&1", $this->getPluginName());
 
-        if (0 !== $this->exec($cmd, $output))
-            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED,
-                $cmd, implode("\n", $output));
+        if (0 !== $this->exec($cmd, $output)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_FAILED,
+                $cmd,
+                implode("\n", $output)
+            );
+        }
     }
 
-    public function startService() {
+    public function startService()
+    {
         global $xmlConfig;
 
         $object = $xmlConfig->get($this->getXPath());
 
-        if (is_null($object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath());
+        if (is_null($object)) {
+            throw new OMVException(
+                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
+                $this->getXPath()
+            );
+        }
 
-        if (!boolval($object["enable"]))
+        if (!boolval($object["enable"])) {
             return;
+        }
 
-        $initd = new OMVSysVInitScript($this->getName(), true);
+        $initd = new OMVSysVInitScript($this->getPluginName(), true);
         $initd->exec();
     }
 
-    public function stopService() {
-        $initd = new OMVSysVInitScript($this->getName());
+    public function stopService()
+    {
+        $initd = new OMVSysVInitScript($this->getPluginName());
         $initd->exec();
     }
 
-    public function bindListeners(OMVNotifyDispatcher $dispatcher) {
+    public function bindListeners(OMVNotifyDispatcher $dispatcher)
+    {
         $dispatcher->addListener(
             OMV_NOTIFY_MODIFY,
-            "org.openmediavault.services.mcmyadmin",
-            array($this, "setDirty"));
+            $this->getEventMessagePath(),
+            array($this, "setDirty")
+        );
     }
 }
 
