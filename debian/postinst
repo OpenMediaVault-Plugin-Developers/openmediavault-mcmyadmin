@@ -13,7 +13,7 @@ SERVICE_NAME="mcmyadmin"
 case "$1" in
     configure)
 
-        if ! grep -q "^${RUN_AS}:" /etc/passwd; then
+        if ! getent passwd ${RUN_AS} >/dev/null 2>&1; then
             echo "Adding ${RUN_AS} user..."
             useradd -M -p paxPtk/EBFGAg ${RUN_AS}
         else
@@ -21,17 +21,19 @@ case "$1" in
         fi
         chown ${RUN_AS}:${RUN_GROUP} -R /home/mcmyadmin
 
-        #insserv -d ${SERVICE_NAME}
-        update-rc.d ${SERVICE_NAME} defaults
-
         if ! omv_config_exists "/config/services/${SERVICE_NAME}"; then
             echo "Initial configuration."
             object="<enable>0</enable>"
-	    object="<port>0</port>"
+            object="<port>0</port>"
             omv_config_add_element "/config/services" "${SERVICE_NAME}" "${object}" true
         fi
+        
+        omv_install_fixperms
 
-		update-rc.d ${SERVICE_NAME} disable
+        # Activate package triggers. These triggers are only set during the
+        # package installation.
+        dpkg-trigger update-fixperms
+        dpkg-trigger update-locale
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

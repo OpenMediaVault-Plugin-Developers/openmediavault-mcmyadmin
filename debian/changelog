@@ -1,35 +1,5 @@
-openmediavault-mcmyadmin (0.5.5) unstable; urgency=low
+openmediavault-couchpotato (1.0.0) unstable; urgency=low
 
-  * Initial release to unstable repo
-
- -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Wed, 02 Apr 2014 07:57:38 -0500
-
-openmediavault-mcmyadmin (0.5.4~1.gbp778e32) stable; urgency=low
-
-  ** SNAPSHOT build @778e3277360e76feb56180fc03190a3caa25ebda **
-
-  [ OpenMediaVault Plugin Developers ]
-  * Replaced start-stop-script with suggestion from jhmiller; mcmyadmin now runs under unpriviliged user
-  * Added postrm script to enable --purge
-
-  [ root ]
-
- -- root <root@localhost.localdomain>  Wed, 19 Mar 2014 20:51:20 +0000
-
-openmediavault-mcmyadmin (0.5.3) stable; urgency=low
-
-  * Added new init script that provides a start-stop-daemon
-
- -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Mon, 17 Mar 2014 19:02:38 -0400
-
-openmediavault-mcmyadmin (0.5.2) stable; urgency=low
-
-  * Fixed typo in postinstall script
-
- -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 16 Mar 2014 15:17:21 -0500
-
-openmediavault-mcmyadmin (0.5.1) stable; urgency=low
-
-  * Initial release
+  * Initial release for kralizec
 
  -- OpenMediaVault Plugin Developers <plugins@omv-extras.org> Sun, 16 Mar 2014 15:17:21 -0500

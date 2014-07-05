@@ -67,13 +67,13 @@ class OMVRpcServicemcMyadmin extends OMVRpcServiceAbstract
         if (is_null($object)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $XPath
+                $this->getXPath()
             );
         }
 
         $object["enable"]  = boolval($object["enable"]);
         $object["showtab"] = boolval($object["showtab"]);
-        $object["port"]    = intval($object['port']);
+        $object["port"]    = intval($object["port"]);
         return $object;
     }
 
