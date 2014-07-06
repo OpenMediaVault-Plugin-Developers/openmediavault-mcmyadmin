@@ -1,5 +1,0 @@
-Notice	: Detecting System...
-Notice	: No virtualized environment detected.
-Notice	: Linux Distribution: Unknown Distribution
-Notice	: Detection complete.
-Fatal	: Could not automatically find java. Please specify the exact path to your java installation in your McMyAdmin.conf

@@ -23,7 +23,7 @@ require_once "openmediavault/initscript.inc";
 require_once "openmediavault/module.inc";
 require_once "openmediavault/util.inc";
 
-class OMVModulemcMyadmin extends OMVModuleServiceAbstract implements
+class OMVModuleMcmyadmin extends OMVModuleServiceAbstract implements
     OMVINotifyListener,
     OMVIModuleServiceStatus
 {
@@ -39,12 +39,12 @@ class OMVModulemcMyadmin extends OMVModuleServiceAbstract implements
 
     private function getXPath()
     {
-        return sprintf("org.openmediavault.service.%s", $this->getPluginName());
+        return sprintf("//services/%s", $this->getPluginName());
     }
 
     public function getName()
     {
-        return "Myadmin";
+        return "Mcmyadmin";
     }
 
     public function getStatus()
@@ -68,20 +68,6 @@ class OMVModulemcMyadmin extends OMVModuleServiceAbstract implements
             "enabled" => boolval($object["enable"]),
             "running" => $initd->status() == 0
         );
-    }
-
-
-    public function applyConfig()
-    {
-        $cmd = sprintf("omv-mkconf %s port & 2>&1", $this->getPluginName());
-
-        if (0 !== $this->exec($cmd, $output)) {
-            throw new OMVException(
-                OMVErrorMsg::E_EXEC_FAILED,
-                $cmd,
-                implode("\n", $output)
-            );
-        }
     }
 
     public function startService()
@@ -123,4 +109,4 @@ class OMVModulemcMyadmin extends OMVModuleServiceAbstract implements
 
 // Register module
 $moduleMgr = &OMVModuleMgr::getInstance();
-$moduleMgr->registerModule(new OMVModulemcMyadmin());
+$moduleMgr->registerModule(new OMVModuleMcmyadmin());

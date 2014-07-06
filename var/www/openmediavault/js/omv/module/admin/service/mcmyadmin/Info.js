@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 // require("js/omv/WorkspaceManager.js")
 // require("js/omv/workspace/panel/Panel.js")
 
@@ -22,16 +23,26 @@ Ext.define("OMV.module.admin.service.mcmyadmin.Info", {
 
     initComponent : function() {
         var me = this;
-        var link = 'http://' + location.hostname + ':8080/';
 
-        me.html = "<ul>" +
+        OMV.Rpc.request({
+            scope    : this,
+            callback : function(id, success, response) {
+                var link = "http://" + window.location.hostname + ":" + response.port;
+                me.html = "<ul>" +
                     "<li>" + _("Default username:  admin") + "</li>" +
                     "<li>" + _("Default password:  openmediavault") + "</li>" +
                   "</ul>" +
                   "<ul>" +
-                    "<li><a href='" + link + "' target='_blank'>" +
+                    "<li><a href='" + link + "' sandbox='allow-same-origin allow-forms allow-scripts' width='100%' height='100%' target='_blank'>" +
                     _("Open in a new window") + "</a></li>" +
                   "</ul>";
+            },
+            relayErrors : false,
+            rpcData     : {
+                service  : "Mcmyadmin",
+                method   : "getSettings"
+            }
+        });
 
         me.callParent(arguments);
     }

@@ -26,7 +26,7 @@ require_once "openmediavault/rpcservice.inc";
 require_once "openmediavault/system.inc";
 require_once "openmediavault/util.inc";
 
-class OMVRpcServicemcMyadmin extends OMVRpcServiceAbstract
+class OMVRpcServiceMcmyadmin extends OMVRpcServiceAbstract
 {
     private function getPluginName()
     {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 OpenMediaVault Plugin Developers
+ * Copyright (C) 2013-2014 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,8 +94,10 @@ Ext.define("OMV.module.admin.service.mcmyadmin.Settings", {
                 text    : _("McMyAdmin Web Interface"),
                 scope   : this,
                 handler : function() {
-                    var link = 'http://' + location.hostname + ':8080/';
-                    window.open(link, '_blank');
+                    var me = this;
+                    var port = me.getForm().findField("port").getValue();
+                    var link = "http://" + location.hostname + ":" + port + "/";
+                    window.open(link, "_blank");
                 }
             },{
                 border: false,
