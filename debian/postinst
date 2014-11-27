@@ -16,6 +16,7 @@ case "$1" in
         if ! getent passwd ${RUN_AS} >/dev/null 2>&1; then
             echo "Adding ${RUN_AS} user..."
             useradd -M -p paxPtk/EBFGAg ${RUN_AS}
+            insserv -d mcmyadmin
         else
             echo "${RUN_AS} user already exists."
         fi
@@ -23,19 +24,20 @@ case "$1" in
         if ! omv_config_exists "/config/services/${SERVICE_NAME}"; then
             echo "Initial configuration."
             object="<enable>0</enable>"
-            object="<port>0</port>"
+            object="<port>9090</port>"
             omv_config_add_element "/config/services" "${SERVICE_NAME}" "${object}" true
         fi
 
         if [ ! -d "/home/mcmyadmin/McMyAdmin" ]; then
             mkdir -p /home/mcmyadmin/McMyAdmin
+            chown $RUN_AS:$RUN_GROUP /home/mcmyadmin -R
             cd /home/mcmyadmin/McMyAdmin
             #wget http://mcmyadmin.com/Downloads/MCMA2_glibc26_2.zip
-            command=`wget -q http://www.mcmyadmin.com/#/download  -O - | grep -m1 MCMA2_ | sed 's/<br \/>/ /'`
+            command=`wget -q http://www.mcmyadmin.com/#/download  -O - | grep -m1 MCMA2_ | sed 's#<br /#># #'`
             eval $command
             unzip MCMA2_*.zip
+            rm ?  >/dev/null 2>&1
             rm MCMA2*.zip
-            ./MCMA2_Linux_x86_64 -setpass openmediavault -configonly
             cat << EOF > /home/mcmyadmin/McMyAdmin/McMyAdmin.conf
 #McMyAdmin Configuration File
 ################################
@@ -60,7 +62,7 @@ Security.AllowConcurrentSessions=False
 ################################
 # Webserver
 ################################
-Webserver.Port=8080
+Webserver.Port=9090
 Webserver.IPBinding=+
 # Webserver.MaxQueueLength - The number of requests to permit the webserver to handle at any given time
 Webserver.MaxQueueLength=8
@@ -107,7 +109,7 @@ Notices.WhitelistMessage=You are not on the whitelist.
 McMyAdmin.ScheduleOffset=0
 McMyAdmin.BackupsPath=Backups
 McMyAdmin.BannerTemplate=BannerTemplate
-McMyAdmin.LicenceKey=lbbheXrAeqgz0CxfJ6sRwX0gV2yi+5WSvgD6fwMqSX+qPziQSHOu2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+McMyAdmin.LicenceKey=lbbheXrAeqgz0CxfJ6sRwX0gV2yi+5WSvgD6fwMqSX+qPziQSHOu2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA$
 McMyAdmin.FirstStart=True
 McMyAdmin.LoadExtensions=
 # McMyAdmin.ClusterMember - Not currently in use
@@ -204,10 +206,12 @@ Game.Whitelist=None
 Game.WhitelistGroup=Everyone
 
 EOF
+            chown $RUN_AS:$RUN_GROUP /home/mcmyadmin/McMyAdmin/McMyAdmin.conf
+            sudo -u $RUN_AS ./MCMA2_Linux_x86_64 -setpass openmediavault -configonly -updateonly -nonotice
         fi
         chown ${RUN_AS}:${RUN_GROUP} -R /home/mcmyadmin
 
-		omv_install_fixperms
+                omv_install_fixperms
 
         # Activate package triggers. These triggers are only set during the
         # package installation.
@@ -225,4 +229,3 @@ EOF
 esac
 
 exit 0
-
