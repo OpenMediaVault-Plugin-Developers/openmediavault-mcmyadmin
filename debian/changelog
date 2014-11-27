@@ -1,5 +1,5 @@
-openmediavault-couchpotato (1.0.0) unstable; urgency=low
+openmediavault-mcmyadmin (1.0) unstable; urgency=low
 
   * Initial release for kralizec
 
- -- OpenMediaVault Plugin Developers <plugins@omv-extras.org> Sun, 16 Mar 2014 15:17:21 -0500
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Thu, 27 Nov 2014 10:27:40 -0600
