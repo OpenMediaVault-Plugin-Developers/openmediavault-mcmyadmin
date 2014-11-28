@@ -1,3 +1,9 @@
+openmediavault-mcmyadmin (1.1) unstable; urgency=low
+
+  * Fix download of mcmyadmin package
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Thu, 27 Nov 2014 19:42:51 -0600
+
 openmediavault-mcmyadmin (1.0) unstable; urgency=low
 
   * Initial release for kralizec
