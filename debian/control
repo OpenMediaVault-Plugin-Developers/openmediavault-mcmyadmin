@@ -1,5 +1,6 @@
 Source: openmediavault-mcmyadmin
-Section: misc
+Section: net
+XB-Plugin-Section: gaming
 Priority: optional
 Maintainer: David Hönel <plugins@omv-extras.org>
 Build-Depends: debhelper (>= 9 )
