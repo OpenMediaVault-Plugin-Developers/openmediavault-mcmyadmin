@@ -1,7 +1,9 @@
 <?php
 
 /**
- * Copyright (C) 2013-2014 OpenMediaVault Plugin Developers
+ * @license http://www.gnu.org/licenses/gpl.html GPL Version 3
+ * @author OpenMediaVault Plugin Developers <plugins@omvextras.org>
+ * @copyright Copyright (c) 2013-2017 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "openmediavault/config.inc";
-require_once "openmediavault/error.inc";
-require_once "openmediavault/initscript.inc";
-require_once "openmediavault/module.inc";
-require_once "openmediavault/util.inc";
-
-class OMVModuleMcmyadmin extends OMVModuleServiceAbstract implements
-    OMVINotifyListener,
-    OMVIModuleServiceStatus
+class OMVModuleMcmyadmin extends \OMV\Engine\Module\ServiceAbstract implements
+    \OMV\Engine\Notify\IListener, \OMV\Engine\Module\IServiceStatus
 {
-    private function getPluginName()
-    {
-        return strtolower($this->getName());
-    }
-
-    private function getEventMessagePath()
-    {
-        return sprintf("org.openmediavault.service.%s", $this->getPluginName());
-    }
-
-    private function getXPath()
-    {
-        return sprintf("//services/%s", $this->getPluginName());
-    }
-
     public function getName()
     {
         return "Mcmyadmin";
@@ -49,64 +29,43 @@ class OMVModuleMcmyadmin extends OMVModuleServiceAbstract implements
 
     public function getStatus()
     {
-        global $xmlConfig;
-
-        $object = $xmlConfig->get($this->getXPath());
-
-        if (is_null($object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath()
-            );
-        }
-
-        $initd = new OMVSysVInitScript($this->getPluginName());
-
+        $db = \OMV\Config\Database::getInstance();
+        $object = $db->get("conf.service.mcmyadmin");
+        $systemCtl = new \OMV\System\SystemCtl("mcmyadmin");
         return array(
-            "name"    => $this->getPluginName(),
-            "title"   => gettext($this->getName()),
-            "enabled" => boolval($object["enable"]),
-            "running" => $initd->status() == 0
+            "name" => $this->getName(),
+            "title" => gettext("mcmyadmin"),
+            "enabled" => $object->get("enable"),
+            "running" => $systemCtl->isActive()
         );
     }
 
     public function startService()
     {
-        global $xmlConfig;
-
-        $object = $xmlConfig->get($this->getXPath());
-
-        if (is_null($object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath()
-            );
-        }
-
-        if (!boolval($object["enable"])) {
+        // Check to see if plugin is enabled
+        $db = \OMV\Config\Database::getInstance();
+        $object = $db->get("conf.service.mcmyadmin");
+        if (TRUE !== $object->get("enable"))
             return;
-        }
-
-        $initd = new OMVSysVInitScript($this->getPluginName(), true);
-        $initd->exec();
+        // Start this service and enable the unit file.
+        $systemCtl = new \OMV\System\SystemCtl("mcmyadmin");
+        $systemCtl->enable(TRUE);
     }
 
     public function stopService()
     {
-        $initd = new OMVSysVInitScript($this->getPluginName());
-        $initd->exec();
+        $systemCtl = new \OMV\System\SystemCtl("mcmyadmin");
+        $systemCtl->disable(TRUE);
     }
 
-    public function bindListeners(OMVNotifyDispatcher $dispatcher)
+    public function bindListeners(\OMV\Engine\Notify\Dispatcher $dispatcher)
     {
+        // This will notify OMV of changes for each configuration type 
+        // and the level to notify.
         $dispatcher->addListener(
             OMV_NOTIFY_MODIFY,
-            $this->getEventMessagePath(),
-            array($this, "setDirty")
+            "org.openmediavault.conf.service.mcmyadmin",
+            [ $this, "setDirty" ]
         );
     }
 }
-
-// Register module
-$moduleMgr = &OMVModuleMgr::getInstance();
-$moduleMgr->registerModule(new OMVModuleMcmyadmin());
