@@ -1,7 +1,9 @@
 <?php
 
 /**
- * Copyright (C) 2013-2014 OpenMediaVault Plugin Developers
+ * @license http://www.gnu.org/licenses/gpl.html GPL Version 3
+ * @author OpenMediaVault Plugin Developers <plugins@omvextras.org>
+ * @copyright Copyright (c) 2013-2017 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,32 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "openmediavault/config.inc";
-require_once "openmediavault/error.inc";
-require_once "openmediavault/notify.inc";
-require_once "openmediavault/object.inc";
-require_once "openmediavault/product.inc";
-require_once "openmediavault/rpcservice.inc";
-require_once "openmediavault/system.inc";
-require_once "openmediavault/util.inc";
-
-class OMVRpcServiceMcmyadmin extends OMVRpcServiceAbstract
+class OMVRpcServiceMcmyadmin extends \OMV\Rpc\ServiceAbstract
 {
-    private function getPluginName()
-    {
-        return strtolower($this->getName());
-    }
-
-    private function getEventMessagePath()
-    {
-        return sprintf("org.openmediavault.service.%s", $this->getPluginName());
-    }
-
-    private function getXPath()
-    {
-        return sprintf("//services/%s", $this->getPluginName());
-    }
-
     public function getName()
     {
         return "Mcmyadmin";
@@ -56,69 +34,36 @@ class OMVRpcServiceMcmyadmin extends OMVRpcServiceAbstract
 
     public function getSettings($params, $context)
     {
-        global $xmlConfig;
+        // Validate the RPC caller context. 
+        $this->validateMethodContext($context, ["role" => OMV_ROLE_ADMINISTRATOR]);
+        // Get the configuration object.
+        $db = \OMV\Config\Database::getInstance();
+        $object = $db->get("conf.service.mcmyadmin");
 
-        $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR
-        ));
-
-        $object = $xmlConfig->get($this->getXPath());
-
-        if (is_null($object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath()
-            );
-        }
-
-        $object["enable"]  = boolval($object["enable"]);
-        $object["showtab"] = boolval($object["showtab"]);
-        $object["port"]    = intval($object["port"]);
-        return $object;
+        // Return the configuration object.
+        return $object->getAssoc();
     }
 
     public function setSettings($params, $context)
     {
-        global $xmlConfig;
+        // Validate the RPC caller context.
+        $this->validateMethodContext($context, ["role" => OMV_ROLE_ADMINISTRATOR]);
+        // Validate the parameters of the RPC service method.
+        $this->validateMethodParams($params, "rpc.mcmyadmin.setsettings");
+        // Get existing configuration object
+        $db = \OMV\Config\Database::getInstance();
+        $object = $db->get("conf.service.mcmyadmin");
+        $object->setAssoc($params); 
+        $db->set($object);
 
-        $this->validateMethodContext($context, array(
-            "role" => OMV_ROLE_ADMINISTRATOR
-        ));
-
-        $this->validateMethodParams(
-            $params,
-            '{
-                "type"       : "object",
-                "properties" : {
-                    "enable"  : { "type" : "boolean" },
-                    "port"    : { "type" : "integer","minimum":1,"maximum":65535},
-                    "showtab" : { "type" : "boolean" }
-                }
-            }'
-        );
-
-        $object = array(
-            "enable"  => array_boolval($params, "enable"),
-            "port"    => $params["port"],
-            "showtab" => array_boolval($params, "showtab")
-        );
-
-        if (false === $xmlConfig->replace($this->getXPath(), $object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_SET_OBJECT_FAILED,
-                $this->getXPath()
-            );
-        }
-
-        $dispatcher = &OMVNotifyDispatcher::getInstance();
+        $dispatcher = \OMV\Engine\Notify\Dispatcher::getInstance();
         $dispatcher->notify(
             OMV_NOTIFY_MODIFY,
-            $this->getEventMessagePath(),
-            $object
+            'conf.services.mcmyadmin',
+            $object->getAssoc()
         );
+
+        // Return the configuration object.
+        return $object->getAssoc();
     }
 }
-
-// Register the RPC service.
-$rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
-$rpcServiceMgr->registerService(new OMVRpcServiceMcmyadmin());
